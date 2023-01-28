@@ -9,12 +9,24 @@ TODO 메뉴 추가
 TODO 메뉴 수정
 - 메뉴의 수정 버튼 클릭 이벤트를 받고, 메뉴를 수정할 수 있는 모달창이 뜬다.(prompt 인터페이스)
 - 모달창(prompt)에서 신규메뉴명을 입력 받고, 확인 버튼을 누르면 메뉴이름이 수정된다.
+
+TODO 메뉴 삭제
+- 메뉴 삭제 버튼 클릭 이벤트를 받고, 메뉴 삭제 컨펌 모달창이 뜬다.(confirm 인터페이스)
+- 확인 버튼을 클릭하면 메뉴가 삭제된다.
+- 총 메뉴 갯수를 count해서 상단에 보여준다.
 */
 
 const $ = (selector) => document.querySelector(selector);
 
 function App() {
-    // 부모요소에 이벤트 위임할 수 있다.
+    // 메뉴 갯수에 따른 count 업데이트 함수 재사용하기
+    const updateMenuCount = () => {
+        const menuCount = $('#espresso-menu-list').querySelectorAll('li').length;
+        $('.menu-count').innerText = `총 ${menuCount}개`;
+    }
+
+    // 부모요소에 이벤트 위임할 수 있다. (아직 수정/삭제 버튼이 생성되기 전이기 때문에)
+    // 메뉴 수정
     $('#espresso-menu-list').addEventListener('click', (e) => { 
         // 수정버튼만 지정될 수 있도록 설정
         if (e.target.classList.contains('menu-edit-button')) {
@@ -29,6 +41,14 @@ function App() {
             $menuName.innerText = uqdateMenuName;
 
             console.log(e.target);
+        }
+
+        // 메뉴 삭제
+        if (e.target.classList.contains('menu-remove-button')) {
+            if(confirm('정말 삭제하시겠습니까?')){ // confirm ture 인 경우
+                e.target.closest('li').remove();
+                updateMenuCount();
+            }
         }
     })
 
@@ -73,8 +93,7 @@ function App() {
             
         // 총 메뉴 갯수를 count해서 보여준다.
         // 메뉴 갯수는 li의 갯수를 카운팅해야 한다.
-        const menuCount = $('#espresso-menu-list').querySelectorAll('li').length;
-        $('.menu-count').innerText = `총 ${menuCount}개`;
+        updateMenuCount();
 
         // 메뉴가 추가되고 나면, input은 빈 값으로 초기화한다.
         $('#espresso-menu-name').value = '';
