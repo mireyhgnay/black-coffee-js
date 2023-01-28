@@ -19,45 +19,13 @@ TODO 메뉴 삭제
 const $ = (selector) => document.querySelector(selector);
 
 function App() {
-    // 메뉴 갯수에 따른 count 업데이트 함수 재사용하기
+    // 메뉴 갯수에 따른 count 업데이트
     const updateMenuCount = () => {
         const menuCount = $('#espresso-menu-list').querySelectorAll('li').length;
         $('.menu-count').innerText = `총 ${menuCount}개`;
     }
 
-    // 부모요소에 이벤트 위임할 수 있다. (아직 수정/삭제 버튼이 생성되기 전이기 때문에)
-    // 메뉴 수정
-    $('#espresso-menu-list').addEventListener('click', (e) => { 
-        // 수정버튼만 지정될 수 있도록 설정
-        if (e.target.classList.contains('menu-edit-button')) {
-            // target에서 가장 가까운 요소를 찾아(closest)
-            const $menuName = e.target.closest('li').querySelector('.menu-name');
-            // 기존 메뉴이름이 prompt창에 디폴트값으로 입력되어있음
-            const uqdateMenuName = prompt(
-                "메뉴명을 수정하세요", 
-                $menuName.innerText
-            );
-            // 변경한 메뉴명으로 업데이트 해준다.
-            $menuName.innerText = uqdateMenuName;
-
-            console.log(e.target);
-        }
-
-        // 메뉴 삭제
-        if (e.target.classList.contains('menu-remove-button')) {
-            if(confirm('정말 삭제하시겠습니까?')){ // confirm ture 인 경우
-                e.target.closest('li').remove();
-                updateMenuCount();
-            }
-        }
-    })
-
-    // form태그가 자동으로 전송되는 걸 막아준다
-    $("#espresso-menu-form").addEventListener("submit", (e) => {
-        e.preventDefault();
-    });
-
-    // 엔터키와 확인버튼 동작이 동일하므로, 함수 재사용할 수 있도록
+    // 메뉴 추가
     const addMenuName = () => {
         // (예외상황1) 사용자 입력값이 빈 값이라면 추가되지 않는다.
         if ($('#espresso-menu-name').value === '') {
@@ -99,11 +67,49 @@ function App() {
         $('#espresso-menu-name').value = '';
     }
 
-    $('#espresso-menu-submit-button').addEventListener("click", () => {
-        addMenuName();
+    // 메뉴 수정
+    const updateMenuName = (e) => {
+        // target에서 가장 가까운 요소를 찾아(closest)
+        const $menuName = e.target.closest('li').querySelector('.menu-name');
+        // 기존 메뉴이름이 prompt창에 디폴트값으로 입력되어있음
+        const uqdateMenuName = prompt(
+            "메뉴명을 수정하세요", 
+            $menuName.innerText
+        );
+        // 변경한 메뉴명으로 업데이트 해준다.
+        $menuName.innerText = uqdateMenuName;
+    }
+
+    // 메뉴 삭제
+    const removeMenuName = (e) => {
+        if(confirm('정말 삭제하시겠습니까?')){ // confirm ture 인 경우
+            e.target.closest('li').remove();
+            updateMenuCount();
+        }
+    }
+
+    // 부모요소에 이벤트 위임할 수 있다. (아직 수정/삭제 버튼이 생성되기 전이기 때문에)
+    $('#espresso-menu-list').addEventListener('click', (e) => { 
+        // 수정버튼 클릭 이벤트
+        if (e.target.classList.contains('menu-edit-button')) {
+            updateMenuName(e);
+        }
+
+        // 삭제버튼 클릭 이벤트
+        if (e.target.classList.contains('menu-remove-button')) {
+            removeMenuName(e);
+        }
+    })
+
+    // form태그가 자동으로 전송되는 걸 막아준다
+    $("#espresso-menu-form").addEventListener("submit", (e) => {
+        e.preventDefault();
     });
 
-    // 메뉴의 이름을 입력받기
+    // 확인버튼 클릭 이벤트
+    $('#espresso-menu-submit-button').addEventListener("click", addMenuName);
+
+    // 엔터키 keypress 이벤트
     $('#espresso-menu-name').addEventListener("keypress", (e) => {
         // (예외상황2) 엔터키가 아닐 때도 무조건 종료 시키기
         if (e.key !== 'Enter') {
