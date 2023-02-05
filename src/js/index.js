@@ -59,10 +59,18 @@ const store = {
 function App() {
     // 상태는 변하는 데이터, 이 앱에서 변하는 것이 무엇인가? - 메뉴명
     // 초기화를 안하면? => 상태가 어떤 데이터 형태로 들어올지 모르게 됨. 어떤 형태로 관리될건지!
-    this.menu = [];
+    this.menu = {
+        espresso: [],
+        frappuccino:[],
+        blended: [],
+        teavana: [],
+        desert: [],
+    };
+    // 현재 선택된 카테고리 상태 관리하기 (초기값 : espresso)
+    this.currentCategory = 'espresso'; 
     this.init = () => {
         // 로컬스토리지에 데이터가 없다면 빈 배열로 있을것임
-        if (store.getLocalStorage().length > 1){
+        if (store.getLocalStorage()){
             this.menu = store.getLocalStorage();
         }
         render();
@@ -70,7 +78,8 @@ function App() {
 
     // template 그려주는 함수(재사용)
     const render = () => {
-        const template = this.menu.map((menuItem, index) => {
+        const template = this.menu[this.currentCategory]
+        .map((menuItem, index) => {
             return `
             <li data-menu-id="${index}" class="menu-list-item d-flex items-center py-2">
             <span class="w-100 pl-2 menu-name">${menuItem.name}</span>
@@ -113,7 +122,7 @@ function App() {
         }
 
         const espressoMenuName = $('#espresso-menu-name').value;
-        this.menu.push({ name : espressoMenuName });
+        this.menu[this.currentCategory].push({ name : espressoMenuName });
         store.setLocalStorage(this.menu);
         render();
 
@@ -173,6 +182,16 @@ function App() {
             return;
         };
         addMenuName();
+    });
+
+    // 카테고리별 메뉴판 관리하기 (버튼 상위 부모에 이벤트리스너를 적용)
+    $('nav').addEventListener("click", (e) => {
+        const isCategoryButton = e.target.classList.contains('cafe-category-name');
+        // nav > button 영역에만 적용될 수 있도록 예외처리
+        if(isCategoryButton) {
+            // dataset 으로 각 data=category-name 값 가져오기
+            const categoryName = e.target.dataset.categoryName;
+        }
     })
 }
 
