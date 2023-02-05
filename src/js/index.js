@@ -100,7 +100,7 @@ function App() {
         .join("");
             
         // 추가되는 메뉴의 아래 마크업은 `<ul id="espresso-menu-list" class="mt-3 pl-0"></ul>` 안에 삽입해야 한다.
-        $('#espresso-menu-list').innerHTML = template;
+        $('#menu-list').innerHTML = template;
             
         // 총 메뉴 갯수를 count해서 보여준다.
         // 메뉴 갯수는 li의 갯수를 카운팅해야 한다.
@@ -109,25 +109,25 @@ function App() {
 
     // 메뉴 갯수에 따른 count 업데이트
     const updateMenuCount = () => {
-        const menuCount = $('#espresso-menu-list').querySelectorAll('li').length;
+        const menuCount = $('#menu-list').querySelectorAll('li').length;
         $('.menu-count').innerText = `총 ${menuCount}개`;
     }
 
     // 메뉴 추가
     const addMenuName = () => {
         // (예외상황1) 사용자 입력값이 빈 값이라면 추가되지 않는다.
-        if ($('#espresso-menu-name').value === '') {
+        if ($('#menu-name').value === '') {
             alert('값을 입력해주세요.');
             return;   
         }
 
-        const espressoMenuName = $('#espresso-menu-name').value;
-        this.menu[this.currentCategory].push({ name : espressoMenuName });
+        const MenuName = $('#menu-name').value;
+        this.menu[this.currentCategory].push({ name : MenuName });
         store.setLocalStorage(this.menu);
         render();
 
         // 메뉴가 추가되고 나면, input은 빈 값으로 초기화한다.
-        $('#espresso-menu-name').value = '';
+        $('#menu-name').value = '';
     }
 
     // 메뉴 수정
@@ -136,18 +136,18 @@ function App() {
         // target에서 가장 가까운 요소를 찾아(closest)
         const $menuName = e.target.closest('li').querySelector('.menu-name');
         // 기존 메뉴이름이 prompt창에 디폴트값으로 입력되어있음
-        const uqdateMenuName = prompt("메뉴명을 수정하세요", $menuName.innerText);
-        this.menu[menuId].name = updateMenuName;
+        const updatedMenuName = prompt("메뉴명을 수정하세요", $menuName.innerText);
+        this.menu[this.currentCategory][menuId].name = updatedMenuName;
         store.setLocalStorage(this.menu);
         // 변경한 메뉴명으로 업데이트 해준다.
-        $menuName.innerText = uqdateMenuName;
+        $menuName.innerText = updatedMenuName;
     }
 
     // 메뉴 삭제
     const removeMenuName = (e) => {
         if(confirm('정말 삭제하시겠습니까?')){ // confirm ture 인 경우
             const menuId = e.target.closest('li').dataset.menuId;
-            this.menu.splice(menuId, 1);
+            this.menu[this.currentCategory].splice(menuId, 1);
             store.setLocalStorage(this.menu);
             e.target.closest('li').remove();
             updateMenuCount();
@@ -155,7 +155,7 @@ function App() {
     }
 
     // 부모요소에 이벤트 위임할 수 있다. (아직 수정/삭제 버튼이 생성되기 전이기 때문에)
-    $('#espresso-menu-list').addEventListener('click', (e) => { 
+    $('#menu-list').addEventListener('click', (e) => { 
         // 수정버튼 클릭 이벤트
         if (e.target.classList.contains('menu-edit-button')) {
             updateMenuName(e);
@@ -168,15 +168,15 @@ function App() {
     })
 
     // form태그가 자동으로 전송되는 걸 막아준다
-    $("#espresso-menu-form").addEventListener("submit", (e) => {
+    $("#menu-form").addEventListener("submit", (e) => {
         e.preventDefault();
     });
 
     // 확인버튼 클릭 이벤트
-    $('#espresso-menu-submit-button').addEventListener("click", addMenuName);
+    $('#menu-submit-button').addEventListener("click", addMenuName);
 
     // 엔터키 keypress 이벤트
-    $('#espresso-menu-name').addEventListener("keypress", (e) => {
+    $('#menu-name').addEventListener("keypress", (e) => {
         // (예외상황2) 엔터키가 아닐 때도 무조건 종료 시키기
         if (e.key !== 'Enter') {
             return;
@@ -191,6 +191,9 @@ function App() {
         if(isCategoryButton) {
             // dataset 으로 각 data=category-name 값 가져오기
             const categoryName = e.target.dataset.categoryName;
+            this.currentCategory = categoryName;
+            $('#category-title').innerText = `${e.target.innerText} 메뉴 관리`;
+            render();
         }
     })
 }
