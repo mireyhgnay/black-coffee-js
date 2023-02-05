@@ -21,6 +21,9 @@ TODO 메뉴 삭제
 step2 요구사항 - 상태 관리로 메뉴 관리하기
 TODO localStorage Read & Write
 - localStorage에 데이터를 저장한다.    
+    - 메뉴를 추가할 때 저장
+    - 메뉴를 수정할 때 저장
+    - 메뉴를 삭제할 때 저장
 - localStorage에 있는 데이터를 읽어온다.
 
 TODO 카테고리별 메뉴판 관리
@@ -43,7 +46,58 @@ TODO 품절 상태 관리
 
 const $ = (selector) => document.querySelector(selector);
 
+// localStorage - 메뉴 정보 저장하고, 불러올 수 있는 객체 만들기
+const store = {
+    setLocalStorage(menu){
+        localStorage.setItem("menu", JSON.stringify(menu)); // 문자열로만 저장해줘야한다.(stringify)
+    },
+    getLocalStorage(){
+        return JSON.parse(localStorage.getItem("menu"));
+    },
+ }; 
+ 
 function App() {
+    // 상태는 변하는 데이터, 이 앱에서 변하는 것이 무엇인가? - 메뉴명
+    // 초기화를 안하면? => 상태가 어떤 데이터 형태로 들어올지 모르게 됨. 어떤 형태로 관리될건지!
+    this.menu = [];
+    this.init = () => {
+        // 로컬스토리지에 데이터가 없다면 빈 배열로 있을것임
+        if (store.getLocalStorage().length > 1){
+            this.menu = store.getLocalStorage();
+        }
+        render();
+    }
+
+    // template 그려주는 함수(재사용)
+    const render = () => {
+        const template = this.menu.map((menuItem, index) => {
+            return `
+            <li data-menu-id="${index}" class="menu-list-item d-flex items-center py-2">
+            <span class="w-100 pl-2 menu-name">${menuItem.name}</span>
+            <button
+                type="button"
+                class="bg-gray-50 text-gray-500 text-sm mr-1 menu-edit-button"
+            >
+                수정
+            </button>
+            <button
+                type="button"
+                class="bg-gray-50 text-gray-500 text-sm menu-remove-button"
+            >
+                삭제
+            </button>
+            </li>`;
+        })
+        .join("");
+            
+        // 추가되는 메뉴의 아래 마크업은 `<ul id="espresso-menu-list" class="mt-3 pl-0"></ul>` 안에 삽입해야 한다.
+        $('#espresso-menu-list').innerHTML = template;
+            
+        // 총 메뉴 갯수를 count해서 보여준다.
+        // 메뉴 갯수는 li의 갯수를 카운팅해야 한다.
+        updateMenuCount();
+    }
+
     // 메뉴 갯수에 따른 count 업데이트
     const updateMenuCount = () => {
         const menuCount = $('#espresso-menu-list').querySelectorAll('li').length;
@@ -59,34 +113,9 @@ function App() {
         }
 
         const espressoMenuName = $('#espresso-menu-name').value;
-        const menuItemTemplate = (espressoMenuName) => {
-            return `
-            <li class="menu-list-item d-flex items-center py-2">
-            <span class="w-100 pl-2 menu-name">${espressoMenuName}</span>
-            <button
-                type="button"
-                class="bg-gray-50 text-gray-500 text-sm mr-1 menu-edit-button"
-            >
-                수정
-            </button>
-            <button
-                type="button"
-                class="bg-gray-50 text-gray-500 text-sm menu-remove-button"
-            >
-                삭제
-            </button>
-            </li>`;
-        };
-            
-        // 추가되는 메뉴의 아래 마크업은 `<ul id="espresso-menu-list" class="mt-3 pl-0"></ul>` 안에 삽입해야 한다.
-        $('#espresso-menu-list').insertAdjacentHTML(
-            "beforeend",
-            menuItemTemplate(espressoMenuName)
-        );
-            
-        // 총 메뉴 갯수를 count해서 보여준다.
-        // 메뉴 갯수는 li의 갯수를 카운팅해야 한다.
-        updateMenuCount();
+        this.menu.push({ name : espressoMenuName });
+        store.setLocalStorage(this.menu);
+        render();
 
         // 메뉴가 추가되고 나면, input은 빈 값으로 초기화한다.
         $('#espresso-menu-name').value = '';
@@ -94,13 +123,13 @@ function App() {
 
     // 메뉴 수정
     const updateMenuName = (e) => {
+        const menuId = e.target.closest("li").dataset.menuId;
         // target에서 가장 가까운 요소를 찾아(closest)
         const $menuName = e.target.closest('li').querySelector('.menu-name');
         // 기존 메뉴이름이 prompt창에 디폴트값으로 입력되어있음
-        const uqdateMenuName = prompt(
-            "메뉴명을 수정하세요", 
-            $menuName.innerText
-        );
+        const uqdateMenuName = prompt("메뉴명을 수정하세요", $menuName.innerText);
+        this.menu[menuId].name = updateMenuName;
+        store.setLocalStorage(this.menu);
         // 변경한 메뉴명으로 업데이트 해준다.
         $menuName.innerText = uqdateMenuName;
     }
@@ -108,6 +137,9 @@ function App() {
     // 메뉴 삭제
     const removeMenuName = (e) => {
         if(confirm('정말 삭제하시겠습니까?')){ // confirm ture 인 경우
+            const menuId = e.target.closest('li').dataset.menuId;
+            this.menu.splice(menuId, 1);
+            store.setLocalStorage(this.menu);
             e.target.closest('li').remove();
             updateMenuCount();
         }
@@ -144,4 +176,5 @@ function App() {
     })
 }
 
-App();
+const app = new App();
+app.init();
